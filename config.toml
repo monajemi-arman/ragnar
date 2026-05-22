@@ -1,0 +1,3 @@
+ragnar_port = 11435
+api = "http://localhost:11434"
+chat_completions_path = "/v1/chat/completions"
