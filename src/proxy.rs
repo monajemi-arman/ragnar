@@ -1,5 +1,5 @@
 use axum::{
-    Router,
+    Json, Router,
     body::Body,
     extract::{Request, State},
     http::{StatusCode, method},
@@ -11,7 +11,7 @@ use reqwest::Client;
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
 
-use crate::Config;
+use crate::{Config, PromptBody, prompt};
 
 #[derive(Clone)]
 struct AppState {
@@ -43,15 +43,21 @@ pub async fn start_server(config: Config) {
 async fn handler(State(state): State<AppState>, req: Request) -> Result<Response, StatusCode> {
     let path = req.uri().path().to_owned();
     let req_method = req.method().clone();
-    let req_body = req
+    let mut req_body = req
         .into_body()
         .collect()
         .await
         .expect("failed to get request body")
-        .to_bytes();
+        .to_bytes()
+        .to_vec();
 
     // Modify prompt before sending to api
-    if path == state.config.chat_completions_path && req_method == method::Method::POST {}
+    if path == state.config.chat_completions_path && req_method == method::Method::POST {
+        if let Ok(Json(mut prompt_body)) = Json::<PromptBody>::from_bytes(&req_body) {
+            prompt::manipulate(&mut prompt_body);
+            req_body = serde_json::to_vec(&prompt_body).expect("failed to do json to vec");
+        }
+    }
 
     let resp_api = state
         .client

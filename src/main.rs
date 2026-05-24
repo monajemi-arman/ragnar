@@ -1,6 +1,6 @@
 use ragnar::{
     Config,
-    proxy::{self, start_server},
+    proxy::start_server,
 };
 use std::fs;
 use toml;
