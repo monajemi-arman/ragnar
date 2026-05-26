@@ -1,5 +1,5 @@
 use ragnar::{
-    Config, rag::database::create_or_load_db, proxy::start_server
+    Config, proxy::start_server
 };
 use std::fs;
 use toml;
@@ -14,6 +14,5 @@ async fn main() {
     )
     .expect("failed to parse config toml, bad content");
 
-    create_or_load_db(&config).await;
     start_server(config).await;
 }

@@ -4213,6 +4213,8 @@ name = "ragnar"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "arrow-array",
+ "arrow-schema",
  "axum",
  "futures",
  "http-body-util",

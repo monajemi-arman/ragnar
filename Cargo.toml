@@ -5,6 +5,8 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.102"
+arrow-array = "58.3.0"
+arrow-schema = "58.3.0"
 axum = "0.8.9"
 futures = "0.3.32"
 http-body-util = "0.1.3"

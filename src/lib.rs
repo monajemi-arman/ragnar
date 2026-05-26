@@ -1,8 +1,11 @@
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use std::sync::{Arc, Mutex};
 
-pub mod rag;
+use crate::rag::database::Database;
+
 pub mod proxy;
+pub mod rag;
 
 #[derive(serde::Deserialize, Clone)]
 pub struct Config {
@@ -18,11 +21,13 @@ pub struct Config {
 pub struct AppState {
     client: Client,
     config: Config,
+    database: Arc<Mutex<Database>>,
 }
 
 impl AppState {
     fn new(config: Config) -> AppState {
         AppState {
+            database: Arc::new(Mutex::new(Database::new(config.db_file.clone()))),
             config,
             client: Client::default(),
         }

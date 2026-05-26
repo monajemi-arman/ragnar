@@ -15,6 +15,14 @@ use crate::{AppState, Config, PromptBody, rag};
 pub async fn start_server(config: Config) {
     let state = AppState::new(config);
 
+    // Database check
+    state
+        .database
+        .lock()
+        .expect("failed to get database lock")
+        .ensure_table()
+        .await;
+
     let addr = SocketAddr::from(([127, 0, 0, 1], state.config.ragnar_port));
     let listener = TcpListener::bind(addr)
         .await
