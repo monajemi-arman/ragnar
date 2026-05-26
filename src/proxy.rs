@@ -7,23 +7,13 @@ use axum::{
     routing::any,
 };
 use http_body_util::BodyExt;
-use reqwest::Client;
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
 
-use crate::{Config, PromptBody, prompt};
-
-#[derive(Clone)]
-struct AppState {
-    client: Client,
-    config: Config,
-}
+use crate::{AppState, Config, PromptBody, prompt};
 
 pub async fn start_server(config: Config) {
-    let state = AppState {
-        config,
-        client: Client::default(),
-    };
+    let state = AppState::new(config);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], state.config.ragnar_port));
     let listener = TcpListener::bind(addr)

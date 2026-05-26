@@ -1,13 +1,33 @@
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
-pub mod proxy;
+pub mod database;
 pub mod prompt;
+pub mod proxy;
 
 #[derive(serde::Deserialize, Clone)]
 pub struct Config {
     ragnar_port: u16,
+    db_file: String,
     api: String,
-    chat_completions_path: String
+    chat_completions_path: String,
+    embed_path: String,
+    embed_model: String,
+}
+
+#[derive(Clone)]
+pub struct AppState {
+    client: Client,
+    config: Config,
+}
+
+impl AppState {
+    fn new(config: Config) -> AppState {
+        AppState {
+            config,
+            client: Client::default(),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Default, Clone)]
