@@ -1,5 +1,5 @@
 use ragnar::{
-    Config, database::create_or_load_db, proxy::start_server
+    Config, rag::database::create_or_load_db, proxy::start_server
 };
 use std::fs;
 use toml;

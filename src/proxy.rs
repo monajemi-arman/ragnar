@@ -10,7 +10,7 @@ use http_body_util::BodyExt;
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
 
-use crate::{AppState, Config, PromptBody, prompt};
+use crate::{AppState, Config, PromptBody, rag};
 
 pub async fn start_server(config: Config) {
     let state = AppState::new(config);
@@ -44,7 +44,7 @@ async fn handler(State(state): State<AppState>, req: Request) -> Result<Response
     // Modify prompt before sending to api
     if path == state.config.chat_completions_path && req_method == method::Method::POST {
         if let Ok(Json(mut prompt_body)) = Json::<PromptBody>::from_bytes(&req_body) {
-            prompt::manipulate(&mut prompt_body);
+            rag::prompt::manipulate(&mut prompt_body);
             req_body = serde_json::to_vec(&prompt_body).expect("failed to do json to vec");
         }
     }

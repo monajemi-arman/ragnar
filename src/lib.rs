@@ -1,8 +1,7 @@
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
-pub mod database;
-pub mod prompt;
+pub mod rag;
 pub mod proxy;
 
 #[derive(serde::Deserialize, Clone)]

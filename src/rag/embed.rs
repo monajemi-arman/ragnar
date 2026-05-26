@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{AppState, PromptBody};
+use crate::AppState;
 
 #[derive(Serialize, Deserialize)]
 struct EmbedRequest<'a> {
@@ -38,5 +38,3 @@ pub async fn generate_embedding(state: &AppState, text: &str) -> Result<Vec<f32>
         None => Err(anyhow::anyhow!("bad response from embed api")),
     }
 }
-
-pub fn manipulate(prompt_body: &mut PromptBody) {}
