@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 
 use crate::rag::database::Database;
 
-pub mod proxy;
+pub mod app;
 pub mod rag;
 
 #[derive(serde::Deserialize, Clone)]

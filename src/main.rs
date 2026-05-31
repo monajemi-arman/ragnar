@@ -1,5 +1,5 @@
 use ragnar::{
-    Config, proxy::start_server
+    Config, app::start_server
 };
 use std::fs;
 use toml;
