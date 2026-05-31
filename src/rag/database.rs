@@ -16,14 +16,16 @@ pub struct Database {
     db_file: String,
     conn: Option<lancedb::Connection>,
     table_name: String,
+    ndims: i32
 }
 
 impl Database {
-    pub fn new(db_file: String) -> Database {
+    pub fn new(db_file: String, ndims: i32) -> Database {
         Database {
             db_file,
             conn: None,
             table_name: "chunks".to_owned(),
+            ndims
         }
     }
 
@@ -65,7 +67,6 @@ impl Database {
             return ();
         }
 
-        let ndims = 128;
         let schema = Arc::new(Schema::new(vec![
             Field::new("id", DataType::Utf8, false),
             Field::new("chunk_index", DataType::UInt32, false),
@@ -74,7 +75,7 @@ impl Database {
                 "embedding",
                 DataType::FixedSizeList(
                     Arc::new(Field::new("item", DataType::Float32, true)),
-                    ndims,
+                    self.ndims,
                 ),
                 false,
             ),

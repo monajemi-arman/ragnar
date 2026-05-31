@@ -15,6 +15,7 @@ pub struct Config {
     chat_completions_path: String,
     embed_path: String,
     embed_model: String,
+    embed_ndims: i32,
 }
 
 #[derive(Clone)]
@@ -27,7 +28,10 @@ pub struct AppState {
 impl AppState {
     fn new(config: Config) -> AppState {
         AppState {
-            database: Arc::new(Mutex::new(Database::new(config.db_file.clone()))),
+            database: Arc::new(Mutex::new(Database::new(
+                config.db_file.clone(),
+                config.embed_ndims,
+            ))),
             config,
             client: Client::default(),
         }

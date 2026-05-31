@@ -9,3 +9,4 @@ api = "http://localhost:11434"
 chat_completions_path = "/v1/chat/completions"
 embed_path = "/v1/embeddings"
 embed_model = "nomic-embed-text"
+embed_ndims = 768                              # if using another embed model, change this value accordingly
