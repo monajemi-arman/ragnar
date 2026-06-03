@@ -10,7 +10,10 @@ use http_body_util::BodyExt;
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
 
-use crate::{AppState, Config, PromptBody, rag};
+use crate::{
+    AppState, Config, PromptBody,
+    rag::{self, database::ChunkRecord, embed::generate_embedding},
+};
 
 pub async fn start_server(config: Config) {
     let state = AppState::new(config);
