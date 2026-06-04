@@ -1,6 +1,6 @@
 use reqwest::Client;
-use serde::{Deserialize, Serialize};
-use std::sync::{Arc, Mutex};
+use tokio::sync::Mutex;
+use std::sync::{Arc};
 
 use crate::rag::database::Database;
 
@@ -10,6 +10,7 @@ pub mod rag;
 #[derive(serde::Deserialize, Clone)]
 pub struct Config {
     ragnar_port: u16,
+    top_k: usize,
     db_file: String,
     api: String,
     chat_completions_path: String,
@@ -20,9 +21,9 @@ pub struct Config {
 
 #[derive(Clone)]
 pub struct AppState {
-    client: Client,
-    config: Config,
-    database: Arc<Mutex<Database>>,
+    pub client: Client,
+    pub config: Config,
+    pub database: Arc<Mutex<Database>>,
 }
 
 impl AppState {
@@ -36,18 +37,4 @@ impl AppState {
             client: Client::default(),
         }
     }
-}
-
-#[derive(Serialize, Deserialize, Default, Clone)]
-pub struct PromptBody {
-    model: String,
-    stream: Option<bool>,
-    context: Option<Vec<i64>>,
-    messages: Vec<PromptMessage>,
-}
-
-#[derive(Serialize, Deserialize, Clone)]
-pub struct PromptMessage {
-    role: String,
-    content: String,
 }

@@ -1,5 +1,6 @@
 # Ragnar
 ragnar_port = 11435
+top_k = 5           # top k documents pulled
 
 # Database
 db_file = "data/lancedb"
