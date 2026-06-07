@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{AppState, rag::embed::generate_embedding};
+use crate::{app::AppState, rag::embed::generate_embedding};
 
 #[derive(Serialize, Deserialize, Default, Clone, Debug)]
 pub struct PromptBody {
@@ -110,4 +110,36 @@ pub async fn manipulate(state: &AppState, prompt_body: &mut PromptBody) {
             prompt_augment
         ),
     }]);
+}
+
+pub async fn ask(
+    state: &AppState,
+    query: &str,
+) -> Result<String, anyhow::Error> {
+    let prompt_body = PromptBody {
+        model: state.config.chat_model.clone(),
+        stream: None,
+        context: None,
+        messages: vec![PromptMessage {
+            role: "user".to_owned(),
+            content: query.to_owned()
+        }]
+    };
+
+    let body = serde_json::to_string(&prompt_body)?;
+
+    let resp = state
+        .client
+        .post(state.config.api.clone() + &state.config.chat_completions_path)
+        .body(body)
+        .send()
+        .await?
+        .text()
+        .await?;
+
+    let mut parsed: PromptResponse = serde_json::from_str(&resp)?;
+    match parsed.choices.pop() {
+        Some(x) => Ok(x.message.content),
+        None => return Err(anyhow::anyhow!("Empty prompt response from llm api")),
+    }
 }

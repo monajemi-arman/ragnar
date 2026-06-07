@@ -1,6 +1,8 @@
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use anyhow::Result;
 
-use crate::AppState;
+use crate::{app::AppState, rag::database::ChunkRecord};
 
 #[derive(Serialize, Deserialize)]
 struct EmbedRequest<'a> {
@@ -16,14 +18,14 @@ struct EmbedData {
     embedding: Vec<f32>,
 }
 
-pub async fn generate_embedding(state: &AppState, text: &str) -> Result<Vec<f32>, anyhow::Error> {
+pub async fn generate_embedding(state: &AppState, text: &str) -> Result<Vec<f32>> {
     let body = serde_json::to_string(&EmbedRequest {
         model: &state.config.embed_model,
         input: text,
     })?;
 
-    let resp = state
-        .client
+    let client = Client::new();
+    let resp = client
         .post(state.config.api.clone() + &state.config.embed_path)
         .body(body)
         .send()
@@ -37,4 +39,11 @@ pub async fn generate_embedding(state: &AppState, text: &str) -> Result<Vec<f32>
         Some(embed_resp) => Ok(embed_resp.embedding),
         None => Err(anyhow::anyhow!("bad response from embed api")),
     }
+}
+
+pub async fn embed_and_save(state: &AppState, source: String, text: String) -> Result<()> {
+    let embedding = generate_embedding(&state, &text).await?;
+    let chunk: ChunkRecord = ChunkRecord { source, text, embedding };
+    state.database.lock().await.insert_chunks(vec![chunk]).await?;
+    Ok(())
 }

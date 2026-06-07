@@ -2,7 +2,7 @@ use std::{sync::Arc, time::Duration};
 
 use arrow_array::{
     FixedSizeListArray, Float32Array, RecordBatch, RecordBatchIterator, RecordBatchReader,
-    StringArray, UInt32Array,
+    StringArray,
 };
 use arrow_schema::{DataType, Field, Schema};
 use futures::TryStreamExt;
@@ -13,7 +13,6 @@ use lancedb::{
 use tokio::time::sleep;
 
 pub struct ChunkRecord {
-    pub chunk_index: u32,
     pub source: String,
     pub text: String,
     pub embedding: Vec<f32>,
@@ -110,7 +109,6 @@ impl Database {
     pub async fn insert_chunks(&self, chunks: Vec<ChunkRecord>) -> anyhow::Result<()> {
         let sources =
             StringArray::from(chunks.iter().map(|c| c.source.as_str()).collect::<Vec<_>>());
-        let indices: UInt32Array = chunks.iter().map(|c| c.chunk_index).collect();
         let texts = StringArray::from(chunks.iter().map(|c| c.text.as_str()).collect::<Vec<_>>());
 
         // Flatten embeddings into one big Float32Array
@@ -131,7 +129,6 @@ impl Database {
         let batch = RecordBatch::try_new(
             schema,
             vec![
-                Arc::new(indices),
                 Arc::new(sources),
                 Arc::new(texts),
                 Arc::new(embedding_col),

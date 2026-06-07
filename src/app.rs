@@ -7,19 +7,43 @@ use axum::{
     routing::any,
 };
 use http_body_util::BodyExt;
+use reqwest::Client;
 use std::net::SocketAddr;
+use std::sync::Arc;
 use tokio::net::TcpListener;
+use tokio::sync::Mutex;
 
-use crate::{
-    AppState, Config,
-    rag::prompt,
-};
+use crate::rag::{database::Database, docs::watch_folder};
+use crate::{Config, rag::prompt};
+
+#[derive(Clone)]
+pub struct AppState {
+    pub client: Client,
+    pub config: Config,
+    pub database: Arc<Mutex<Database>>,
+}
+
+impl AppState {
+    fn new(config: Config) -> AppState {
+        AppState {
+            database: Arc::new(Mutex::new(Database::new(
+                config.db_file.clone(),
+                config.embed_ndims,
+            ))),
+            config,
+            client: Client::default(),
+        }
+    }
+}
 
 pub async fn start_server(config: Config) {
     let state = AppState::new(config);
 
     // Database check
     state.database.lock().await.ensure_table().await;
+
+    // Add new documents to db
+    watch_folder(&state).await;
 
     let addr = SocketAddr::from(([127, 0, 0, 1], state.config.ragnar_port));
     let listener = TcpListener::bind(addr)

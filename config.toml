@@ -10,7 +10,8 @@ docs_log_file = "data/docs_seen.txt"
 
 # LLM (Open-AI compatible API)
 api = "http://localhost:11434"
+chat_model = "tinyllama"
+embed_model = "nomic-embed-text"
 chat_completions_path = "/v1/chat/completions"
 embed_path = "/v1/embeddings"
-embed_model = "nomic-embed-text"
 embed_ndims = 768                              # if using another embed model, change this value accordingly
