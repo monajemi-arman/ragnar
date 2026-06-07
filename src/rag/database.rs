@@ -73,7 +73,6 @@ impl Database {
             .contains(&table_name.to_string())
         {
             let schema = Arc::new(Schema::new(vec![
-                Field::new("chunk_index", DataType::UInt32, false),
                 Field::new("source", DataType::Utf8, false),
                 Field::new("text", DataType::Utf8, false),
                 Field::new(
