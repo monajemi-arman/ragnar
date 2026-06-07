@@ -1,9 +1,12 @@
 # Ragnar
+docs_folder = "docs" # folder to watch for new documents for RAG
 ragnar_port = 11435
-top_k = 5           # top k documents pulled
+top_k = 5            # top k documents pulled
+prepend_context = true  # add context to paragraphs in documents before embedding for RAG
 
 # Database
 db_file = "data/lancedb"
+docs_log_file = "data/docs_seen.txt"
 
 # LLM (Open-AI compatible API)
 api = "http://localhost:11434"

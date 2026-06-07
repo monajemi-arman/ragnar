@@ -1,6 +1,7 @@
 use ragnar::{
-    Config, app::start_server
+    Config, app::start_server, rag::docs::watch_folder
 };
+use tokio::join;
 use std::fs;
 use toml;
 
@@ -14,5 +15,5 @@ async fn main() {
     )
     .expect("failed to parse config toml, bad content");
 
-    start_server(config).await;
+    join!(watch_folder(&config), start_server(config.clone()));
 }

@@ -13,7 +13,6 @@ use lancedb::{
 use tokio::time::sleep;
 
 pub struct ChunkRecord {
-    pub id: String,
     pub chunk_index: u32,
     pub source: String,
     pub text: String,
@@ -75,7 +74,6 @@ impl Database {
             .contains(&table_name.to_string())
         {
             let schema = Arc::new(Schema::new(vec![
-                Field::new("id", DataType::Utf8, false),
                 Field::new("chunk_index", DataType::UInt32, false),
                 Field::new("source", DataType::Utf8, false),
                 Field::new("text", DataType::Utf8, false),
@@ -110,7 +108,6 @@ impl Database {
 
     /// Insert a batch of chunk records
     pub async fn insert_chunks(&self, chunks: Vec<ChunkRecord>) -> anyhow::Result<()> {
-        let ids = StringArray::from(chunks.iter().map(|c| c.id.as_str()).collect::<Vec<_>>());
         let sources =
             StringArray::from(chunks.iter().map(|c| c.source.as_str()).collect::<Vec<_>>());
         let indices: UInt32Array = chunks.iter().map(|c| c.chunk_index).collect();
@@ -134,7 +131,6 @@ impl Database {
         let batch = RecordBatch::try_new(
             schema,
             vec![
-                Arc::new(ids),
                 Arc::new(indices),
                 Arc::new(sources),
                 Arc::new(texts),
@@ -189,5 +185,14 @@ impl Database {
         }
 
         Ok(out)
+    }
+
+    pub async fn remove_table(&mut self) {
+        let table_name = self.table_name.clone();
+        self.get_conn()
+            .await
+            .drop_table(table_name, &[])
+            .await
+            .expect("failed to remove table");
     }
 }
