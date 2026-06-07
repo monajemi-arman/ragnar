@@ -10,8 +10,8 @@ use http_body_util::BodyExt;
 use reqwest::Client;
 use std::net::SocketAddr;
 use std::sync::Arc;
-use tokio::net::TcpListener;
 use tokio::sync::Mutex;
+use tokio::{join, net::TcpListener};
 
 use crate::rag::{database::Database, docs::watch_folder};
 use crate::{Config, rag::prompt};
@@ -42,9 +42,6 @@ pub async fn start_server(config: Config) {
     // Database check
     state.database.lock().await.ensure_table().await;
 
-    // Add new documents to db
-    watch_folder(&state).await;
-
     let addr = SocketAddr::from(([127, 0, 0, 1], state.config.ragnar_port));
     let listener = TcpListener::bind(addr)
         .await
@@ -53,11 +50,10 @@ pub async fn start_server(config: Config) {
     let router = Router::new()
         .route("/{*path}", any(handler))
         .route("/", any(handler))
-        .with_state(state);
+        .with_state(state.clone());
 
-    axum::serve(listener, router)
-        .await
-        .expect("failed to serve axum");
+    let (_, result) = join!(watch_folder(&state), axum::serve(listener, router));
+    result.expect("failed to start server");
 }
 
 async fn handler(
