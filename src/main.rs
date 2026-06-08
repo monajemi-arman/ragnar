@@ -1,18 +1,7 @@
-use ragnar::{
-    Config, app::start_server
-};
-use std::fs;
-use toml;
-
-const CONFIG_FILE: &str = "config.toml";
+use ragnar::{app::start_server, config};
 
 #[tokio::main]
 async fn main() {
-    let config: Config = toml::from_str(
-        &fs::read_to_string(CONFIG_FILE)
-            .unwrap_or_else(|_| panic!("failed to read config file at: {}", CONFIG_FILE)),
-    )
-    .expect("failed to parse config toml, bad content");
-
+    let config = config::load_or_create();
     start_server(config).await;
 }

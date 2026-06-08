@@ -14,7 +14,7 @@ use tokio::sync::Mutex;
 use tokio::{join, net::TcpListener};
 
 use crate::rag::{database::Database, docs::watch_folder};
-use crate::{Config, rag::prompt};
+use crate::{config::Config, rag::prompt};
 
 #[derive(Clone)]
 pub struct AppState {
