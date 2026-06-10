@@ -39,9 +39,49 @@ pub fn load_or_create() -> Config {
         .join(CONFIG_NAME);
     }
 
+    let default_data_dir = Path::new(&dirs::data_dir().unwrap_or_else(|| {
+        eprintln!(
+            "failed to identify data dir for your system,
+        falling back to program current directory (./ragnar_data/ragnar/data)"
+        );
+        Path::new("./ragnar_data").to_path_buf()
+    }))
+    .join("ragnar")
+    .join("data")
+    .to_str()
+    .unwrap()
+    .to_owned();
+
+    let default_docs_dir = Path::new(&dirs::data_dir().unwrap_or_else(|| {
+        eprintln!(
+            "failed to identify data dir for your system,
+        falling back to program current directory (./ragnar_data/ragnar/docs/)"
+        );
+        Path::new("./ragnar_data").to_path_buf()
+    }))
+    .join("ragnar")
+    .join("docs")
+    .to_str()
+    .unwrap()
+    .to_owned();
+
     // New config initialization
     if !config_path.is_file() {
         println!("Config file not found, initializing new config file...");
+
+        let data_dir = input(
+            &format!(
+                "Enter path to data folder for RAGnar, otherwise it sets to default ({default_data_dir}): "
+            ),
+            default_data_dir,
+        );
+
+        let docs_dir = input(
+            &format!(
+                "Enter path to docs folder for documents auto retrieval, otherwise it sets to default ({default_docs_dir}): "
+            ),
+            default_docs_dir,
+        );
 
         let api = input(
             "Enter your LLM API (http://localhost:11434): ",
@@ -58,7 +98,7 @@ pub fn load_or_create() -> Config {
             String::from("nomic-embed-text"),
         );
 
-        let generated_config = generate_config(&api, &chat_model, &embed_model);
+        let generated_config = generate_config(&data_dir, &docs_dir, &api, &chat_model, &embed_model);
 
         fs::write(&config_path, generated_config).expect(&format!(
             "failed to write to config file at {}",
@@ -91,24 +131,30 @@ fn input<T: FromStr + Clone>(text: &str, default: T) -> T {
     });
 
     if user_input.trim().len() <= 0 {
-        println!("Empty response, falling back to default value.");
+        println!("Default value set.");
         default
     } else {
         to_return
     }
 }
 
-fn generate_config(api: &str, chat_model: &str, embed_model: &str) -> String {
+fn generate_config(
+    data_dir: &str,
+    docs_dir: &str,
+    api: &str,
+    chat_model: &str,
+    embed_model: &str,
+) -> String {
     format!(
         r#"# Ragnar
-docs_folder = "docs" # folder to watch for new documents for RAG
+docs_folder = "{docs_dir}" # folder to watch for new documents for RAG
 ragnar_port = 11435
 top_k = 5 # top k documents pulled
 prepend_context = true # add context to paragraphs before embedding
 
 # Database
-db_file = "data/lancedb"
-docs_log_file = "data/docs_seen.txt"
+db_file = "{data_dir}/lancedb"
+docs_log_file = "{data_dir}/docs_seen.txt"
 
 # LLM (OpenAI-compatible API)
 api = "{api}"
