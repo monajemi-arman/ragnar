@@ -1,6 +1,6 @@
+use anyhow::Result;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use anyhow::Result;
 
 use crate::{app::AppState, rag::database::ChunkRecord};
 
@@ -29,7 +29,12 @@ pub async fn generate_embedding(state: &AppState, text: &str) -> Result<Vec<f32>
         .post(state.config.api.clone() + &state.config.embed_path)
         .body(body)
         .send()
-        .await?
+        .await
+        .map_err(|_| {
+            anyhow::anyhow!(
+                "Failed to send request to OpenAI-compatible API for embedding, is it even running?"
+            )
+        })?
         .text()
         .await?;
 
@@ -43,7 +48,16 @@ pub async fn generate_embedding(state: &AppState, text: &str) -> Result<Vec<f32>
 
 pub async fn embed_and_save(state: &AppState, source: String, text: String) -> Result<()> {
     let embedding = generate_embedding(&state, &text).await?;
-    let chunk: ChunkRecord = ChunkRecord { source, text, embedding };
-    state.database.lock().await.insert_chunks(vec![chunk]).await?;
+    let chunk: ChunkRecord = ChunkRecord {
+        source,
+        text,
+        embedding,
+    };
+    state
+        .database
+        .lock()
+        .await
+        .insert_chunks(vec![chunk])
+        .await?;
     Ok(())
 }
